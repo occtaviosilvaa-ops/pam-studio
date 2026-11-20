@@ -1,5 +1,5 @@
 // PAM Studio: guarda la app para abrirla sin internet. Los datos viven en el dispositivo (localStorage).
-const C='pam-studio-v2';
+const C='pam-studio-v3';
 self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(['./','./index.html','./manifest.json','./icon-192.png','./icon-512.png'])));self.skipWaiting()});
 self.addEventListener('activate',e=>e.waitUntil(self.clients.claim()));
 self.addEventListener('fetch',e=>{
