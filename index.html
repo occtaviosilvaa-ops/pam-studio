@@ -13,6 +13,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,800;1,500;1,700&family=Parisienne&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.9.3/confetti.browser.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <style>
 :root{
   --bg1:#fff0f5;--bg2:#ffe1ec;--card:#ffffffd9;--ink:#4a2338;--muted:#9b6b84;
@@ -291,6 +294,10 @@ details summary{cursor:pointer;font-weight:600;color:var(--fucsia)}
     <div class="week" id="sEst"></div>
     <p class="hint">Las comisiones y los impuestos cambian: confirmalos en DolarApp, Mercado Pago y tu banco, y corregilos acá.</p>
     <button class="btn" onclick="guardarAjustes()">Guardar ajustes</button></div>
+    <div class="card" style="margin-top:14px"><b>☁️ Sincronizar celu y compu</b>
+      <p class="hint" id="syncInfo">Entrá con tu cuenta de Google en los dos dispositivos y todo se sincroniza solo.</p>
+      <div class="row"><button class="btn" id="btnSync" onclick="syncLogin()">Entrar con Google</button></div>
+    </div>
     <div class="card" style="margin-top:14px"><b>💾 Copia de seguridad</b><p class="hint">Todo se guarda solo en este dispositivo. Descargá una copia cada tanto, y usala para pasar tus datos de la compu al celu.</p>
       <div class="row"><button class="btn soft" onclick="exportar()">⬇️ Descargar copia</button><label class="btn soft" style="text-align:center">⬆️ Cargar copia<input type="file" accept=".json" onchange="importar(event)" hidden></label></div>
       <div class="row" style="margin-top:10px"><button class="btn soft" onclick="testSonido()">🔔 Probar ka-ching</button><button class="btn soft" onclick="instalar()" id="btnInst">📲 Instalar app</button></div>
@@ -349,7 +356,31 @@ for(const k in DEF) if(S[k]===undefined) S[k]=structuredClone(DEF[k]);
 for(const k in DEF.settings) if(S.settings[k]===undefined) S.settings[k]=structuredClone(DEF.settings[k]);
 const estDe=f=>S.settings.est[(new Date(f+'T12:00').getDay()+6)%7]||0; // estimado del día (lunes = 0)
 const usdDia=f=>S.ingresos.filter(x=>x.fecha===f).reduce((a,x)=>a+neto(x.usd).usd,0);
-const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){toast('⚠️ No se pudo guardar en este dispositivo')}};
+const save=(remoto)=>{if(!remoto)S._t=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){toast('⚠️ No se pudo guardar en este dispositivo')}if(!remoto)syncPush()};
+
+/* ===== Sincronización con Firebase (cuenta de Google de Pamela) ===== */
+// Configuración pública del proyecto de Firebase (no es una contraseña: protegen las reglas de Firestore y el inicio con Google)
+const FB_CONFIG={apiKey:"AIzaSyB8h3QqNPz-Alw0zq_Pz1B9O4T7wIOgrIA",authDomain:"pam-studio-17eef.firebaseapp.com",projectId:"pam-studio-17eef",storageBucket:"pam-studio-17eef.firebasestorage.app",messagingSenderId:"471551785848",appId:"1:471551785848:web:97508e6788f6731753e68d"};
+let fbUser=null,fbDoc=null,pushT=null;
+function syncUI(estado){const b=$('btnSync'),i=$('syncInfo');if(!b)return;
+  if(!FB_CONFIG){b.disabled=true;b.textContent='Pronto ✨';i.textContent='La sincronización se activa cuando esté listo el proyecto de Firebase.';return}
+  if(fbUser){b.textContent='Salir';i.innerHTML=`☁️ Sincronizado con <b>${esc(fbUser.email||'tu cuenta')}</b>${estado?' · '+estado:''}`}
+  else{b.textContent='Entrar con Google';i.textContent='Entrá con tu cuenta de Google en los dos dispositivos y todo se sincroniza solo.'}}
+function syncInit(){if(!FB_CONFIG||!window.firebase)return syncUI();
+  firebase.initializeApp(FB_CONFIG);const db=firebase.firestore();
+  db.enablePersistence({synchronizeTabs:true}).catch(()=>{});
+  firebase.auth().getRedirectResult().catch(e=>toast('No se pudo entrar: '+e.code));
+  firebase.auth().onAuthStateChanged(u=>{fbUser=u;if(fbDoc){fbDoc();fbDoc=null}
+    if(u){const ref=db.collection('usuarias').doc(u.uid);
+      fbDoc=ref.onSnapshot(snap=>{const r=snap.data();
+        if(r&&r.t>(S._t||0)){try{S=JSON.parse(r.data);save(true);render();syncUI('actualizado '+new Date(r.t).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'}))}catch(e){}}
+        else if(!r||r.t<(S._t||0))syncPush(true);});
+    }syncUI()})}
+function syncPush(ya){if(!fbUser)return;clearTimeout(pushT);pushT=setTimeout(()=>{
+  firebase.firestore().collection('usuarias').doc(fbUser.uid).set({t:S._t||Date.now(),data:JSON.stringify(S)}).then(()=>syncUI('guardado ✓')).catch(()=>syncUI('sin conexión, se sube después'))},ya?0:800)}
+function syncLogin(){if(!FB_CONFIG)return;if(fbUser){if(confirm('¿Salir de la sincronización? Tus datos quedan en este dispositivo.'))firebase.auth().signOut();return}
+  const p=new firebase.auth.GoogleAuthProvider(),standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone;
+  (standalone||/Android|iPhone|iPad/i.test(navigator.userAgent)?firebase.auth().signInWithRedirect(p):firebase.auth().signInWithPopup(p)).catch(e=>toast('No se pudo entrar: '+e.code))}
 const uid=()=>Math.random().toString(36).slice(2,9);
 const hoy=()=>new Date().toLocaleDateString('sv');
 const mesDe=d=>d.slice(0,7);
@@ -569,7 +600,7 @@ function nuevaFrase(){fr=(fr+1)%FRASES.length;const [q,a]=FRASES[fr];$('quote').
 ['iFecha','gFecha','aFecha'].forEach(i=>$(i).value=hoy());
 nuevaFrase();pintarDolar();
 let tab='inicio';try{tab=localStorage.getItem(KEY+'_tab')||'inicio'}catch(e){}
-nav(tab);cargarDolar();
+nav(tab);cargarDolar();syncInit();
 if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
 </body>
