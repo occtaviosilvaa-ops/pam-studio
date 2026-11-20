@@ -1,0 +1,576 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>PAM Studio</title>
+<meta name="theme-color" content="#ffb6cf">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,800;1,500;1,700&family=Parisienne&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.9.3/confetti.browser.min.js"></script>
+<style>
+:root{
+  --bg1:#fff0f5;--bg2:#ffe1ec;--card:#ffffffd9;--ink:#4a2338;--muted:#9b6b84;
+  --pink:#ff8fb8;--fucsia:#ff2e93;--neon:#ff4fd8;--lila:#d9c2ff;--menta:#7fe0c2;--oro:#e8b86d;--rojo:#ff5c7a;
+  --sh:0 10px 30px rgba(255,46,147,.13);--r:22px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:linear-gradient(160deg,var(--bg1),var(--bg2) 60%,#f6e3ff);color:var(--ink);font-family:Poppins,system-ui,sans-serif;min-height:100%}
+body{padding-bottom:84px}
+h1,h2,h3{font-family:"Playfair Display",serif;margin:0}
+.script{font-family:Parisienne,cursive}
+button{font-family:inherit;cursor:pointer}
+input,select{font-family:inherit;font-size:16px;border:1.5px solid #ffd0e2;border-radius:14px;padding:10px 12px;background:#fff;color:var(--ink);width:100%;outline:none}
+input:focus,select:focus{border-color:var(--fucsia);box-shadow:0 0 0 4px #ff2e9322}
+.app{display:flex;min-height:100vh}
+nav.side{display:none}
+main{flex:1;max-width:1180px;margin:0 auto;padding:18px 16px 30px;width:100%}
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+.brand{display:flex;align-items:center;gap:10px}
+.brand .logo{width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,var(--fucsia),var(--neon));display:grid;place-items:center;color:#fff;font:700 22px "Playfair Display";box-shadow:0 0 18px #ff4fd877}
+.brand b{font:italic 700 22px "Playfair Display"}
+.brand small{display:block;color:var(--muted);font-size:11px;letter-spacing:.18em;text-transform:uppercase}
+.rate{background:var(--card);border-radius:999px;padding:6px 12px;font-size:12px;box-shadow:var(--sh);display:flex;gap:8px;align-items:center;white-space:nowrap}
+.rate img{width:18px;height:18px;border-radius:5px}
+.hero{position:relative;overflow:hidden;border-radius:28px;padding:22px;background:linear-gradient(135deg,#ffc2d9,#ffd9ec 45%,#e7d6ff);box-shadow:var(--sh);margin-bottom:16px}
+.hero h1{font-size:clamp(26px,5vw,40px);font-style:italic}
+.hero h1 span{color:var(--fucsia)}
+.hero .quote{margin-top:10px;font:italic 500 clamp(15px,2.4vw,19px) "Playfair Display";max-width:640px}
+.hero .quote small{display:block;font:500 12px Poppins;color:var(--muted);margin-top:4px}
+.hero .deco{position:absolute;right:14px;top:8px;font-size:58px;opacity:.9;filter:drop-shadow(0 6px 10px #ff2e9333)}
+.hero .deco2{position:absolute;right:76px;bottom:6px;font-size:30px;opacity:.8}
+.grid{display:grid;gap:14px}
+.k4{grid-template-columns:repeat(2,1fr)}
+.card{background:var(--card);backdrop-filter:blur(10px);border-radius:var(--r);padding:16px;box-shadow:var(--sh);border:1px solid #ffffff}
+.kpi .lbl{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.kpi .val{font:800 clamp(20px,4vw,28px) "Playfair Display";margin-top:4px}
+.kpi .sub{font-size:12px;color:var(--muted);margin-top:2px}
+.pos{color:#16a37a}.neg{color:var(--rojo)}
+.bar{height:16px;border-radius:999px;background:#ffe3ee;overflow:hidden;position:relative}
+.bar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--pink),var(--fucsia),var(--neon));box-shadow:0 0 14px #ff4fd8aa;transition:width 1.2s cubic-bezier(.2,.9,.2,1);width:0}
+.bar.oro i{background:linear-gradient(90deg,#f6d59a,var(--oro),#ffcf6e)}
+.bar.menta i{background:linear-gradient(90deg,#b5f3df,var(--menta))}
+.bar.roja i{background:linear-gradient(90deg,#ffb3c1,var(--rojo))}
+.goal{display:flex;justify-content:space-between;font-size:13px;margin:8px 0 6px}
+.sec-t{display:flex;align-items:center;justify-content:space-between;margin:18px 0 10px}
+.sec-t h2{font-size:22px;font-style:italic}
+.btn{border:0;border-radius:16px;padding:12px 16px;font-weight:600;background:linear-gradient(135deg,var(--fucsia),var(--neon));color:#fff;box-shadow:0 8px 20px #ff2e9344;transition:transform .15s}
+.btn:active{transform:scale(.96)}
+.btn.soft{background:#fff;color:var(--fucsia);box-shadow:var(--sh)}
+.btn.sm{padding:7px 11px;font-size:13px;border-radius:12px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.row>*{flex:1;min-width:120px}
+.list{display:flex;flex-direction:column;gap:8px}
+.item{display:flex;align-items:center;gap:10px;background:#fff;border-radius:16px;padding:10px 12px;box-shadow:0 4px 12px #ff2e930f}
+.item .ic{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;background:#fff0f6;font-size:18px;flex:none;overflow:hidden}
+.item .ic img{width:24px;height:24px}
+.item .tx{flex:1;min-width:0}
+.item .tx b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .tx small{color:var(--muted);font-size:12px}
+.item .am{font-weight:700}
+.x{border:0;background:none;color:#d7a3bb;font-size:18px}
+.chk{width:26px;height:26px;border-radius:9px;border:2px solid var(--pink);display:grid;place-items:center;background:#fff;color:#fff;font-weight:700;flex:none}
+.chk.on{background:var(--menta);border-color:var(--menta)}
+.done b{text-decoration:line-through;opacity:.55}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{border:1.5px solid #ffd0e2;background:#fff;border-radius:999px;padding:7px 12px;font-size:13px;display:flex;gap:6px;align-items:center;color:var(--ink)}
+.chip img{width:16px;height:16px;border-radius:4px}
+.chip.on{background:var(--fucsia);border-color:var(--fucsia);color:#fff}
+canvas{max-width:100%}
+.ch{position:relative;height:230px}
+.badges{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.badge{border-radius:20px;padding:14px 10px;text-align:center;background:#fff;box-shadow:var(--sh);filter:grayscale(1);opacity:.5}
+.badge.on{filter:none;opacity:1;background:linear-gradient(160deg,#fff,#ffe6f1);border:1.5px solid #ffc2da}
+.badge .e{font-size:34px}
+.badge b{display:block;font-size:13px;margin-top:4px}
+.badge small{font-size:11px;color:var(--muted)}
+.nivel{display:flex;align-items:center;gap:10px}
+.nivel .med{font-size:30px}
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:50;display:flex;justify-content:space-around;background:#ffffffee;backdrop-filter:blur(14px);padding:8px 4px calc(8px + env(safe-area-inset-bottom));box-shadow:0 -6px 24px #ff2e9318;border-radius:22px 22px 0 0}
+.tabs button{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10.5px;color:var(--muted);padding:4px 6px;border-radius:12px}
+.tabs button span{font-size:20px}
+.tabs button.on{color:var(--fucsia);background:#ffe6f1}
+.view{display:none;animation:in .45s ease}
+.view.on{display:block}
+@keyframes in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.toast{position:fixed;left:50%;top:18px;transform:translate(-50%,-120px);background:#fff;border-radius:18px;padding:12px 18px;box-shadow:0 14px 34px #ff2e9340;z-index:99;font-weight:600;transition:transform .5s cubic-bezier(.2,1.3,.4,1);max-width:90vw;text-align:center}
+.toast.on{transform:translate(-50%,0)}
+.big{font:800 34px "Playfair Display";color:var(--fucsia)}
+.hint{font-size:12px;color:var(--muted)}
+.pill{display:inline-block;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:600;background:#ffe6f1;color:var(--fucsia)}
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:10px}
+.week div{border-radius:14px;padding:8px 2px;text-align:center;background:#fff;font-size:11px}
+.week div b{display:block;font-size:13px}
+.week .ok{background:linear-gradient(160deg,#c9f6e8,#ffffff)}
+.week .hoy{outline:2px solid var(--fucsia)}
+.week .rest{background:#f3e8ff}
+details summary{cursor:pointer;font-weight:600;color:var(--fucsia)}
+@media(min-width:900px){
+  body{padding-bottom:0}
+  .tabs{display:none}
+  nav.side{display:flex;flex-direction:column;gap:6px;width:230px;padding:22px 14px;position:sticky;top:0;height:100vh;background:#ffffffa8;backdrop-filter:blur(14px);box-shadow:6px 0 30px #ff2e930f}
+  nav.side button{border:0;background:none;text-align:left;padding:11px 14px;border-radius:14px;font-size:14px;color:var(--ink);display:flex;gap:10px;align-items:center}
+  nav.side button.on{background:linear-gradient(135deg,#ffd0e2,#ffe9f3);color:var(--fucsia);font-weight:600}
+  nav.side .tagline{margin-top:auto;font-size:22px;color:var(--fucsia);text-align:center}
+  .k4{grid-template-columns:repeat(4,1fr)}
+  .two{grid-template-columns:1.4fr 1fr}
+  .ch{height:280px}
+}
+@media(max-width:600px){.brand small{display:none}.brand b{font-size:19px;white-space:nowrap}.rate{font-size:11px;padding:5px 9px}.goal{flex-direction:column;gap:2px}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+<nav class="side" id="side"></nav>
+<main>
+  <div class="top">
+    <div class="brand"><div class="logo">P</div><div><b>PAM Studio</b><small>Método PAM · tu control</small></div></div>
+    <div class="rate" id="rate">💵 cargando dólar…</div>
+  </div>
+
+  <!-- INICIO -->
+  <section class="view on" id="v-inicio">
+    <div class="hero">
+      <div class="deco">🗼</div><div class="deco2">👠🥂</div>
+      <div class="script" style="font-size:22px;color:var(--fucsia)">Bonjour,</div>
+      <h1>Bienvenida, <span id="nombre">Pamela Peralta</span> ✨</h1>
+      <div class="quote" id="quote"></div>
+      <button class="btn soft sm" style="margin-top:12px" onclick="nuevaFrase()">💌 Otra frase</button>
+    </div>
+    <div class="card" style="margin-bottom:14px">
+      <div class="row" style="justify-content:space-between">
+        <div><div class="hint">Meta del mes 💖</div><div class="big" id="metaTxt">—</div></div>
+        <div style="text-align:right"><div class="hint">Te falta</div><div style="font:700 20px 'Playfair Display'" id="faltaTxt">—</div></div>
+      </div>
+      <div class="goal"><span id="metaPct">0 %</span><span id="metaPorDia"></span></div>
+      <div class="bar"><i id="metaBar"></i></div>
+      <div class="week" id="semana"></div>
+      <div class="goal" style="margin-top:12px"><span id="semTxt"></span><span id="semArs"></span></div><div class="bar menta"><i id="semBar"></i></div>
+    </div>
+    <div class="grid k4">
+      <div class="card kpi"><div class="lbl">💰 Hoy</div><div class="val" id="kHoy">—</div><div class="sub" id="kHoyS"></div></div>
+      <div class="card kpi"><div class="lbl">📅 Este mes</div><div class="val" id="kMes">—</div><div class="sub" id="kMesS"></div></div>
+      <div class="card kpi"><div class="lbl">🏠 Gastos del mes</div><div class="val neg" id="kGas">—</div><div class="sub" id="kGasS"></div></div>
+      <div class="card kpi"><div class="lbl">🐷 Chanchito</div><div class="val" id="kChan">—</div><div class="sub" id="kChanS"></div></div>
+    </div>
+    <div class="grid two" style="margin-top:14px">
+      <div class="card"><div class="sec-t" style="margin-top:0"><h2>Tus últimos 14 días</h2><span class="pill">USD netos</span></div><div class="ch"><canvas id="cDias"></canvas></div></div>
+      <div class="card"><div class="sec-t" style="margin-top:0"><h2>¿En qué se va?</h2><span class="pill">este mes</span></div><div class="ch"><canvas id="cCat"></canvas></div></div>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <div class="nivel"><div class="med" id="nivMed">🥉</div><div style="flex:1"><b id="nivTxt">Nivel</b><div class="hint" id="nivSub"></div><div class="bar oro" style="margin-top:6px"><i id="nivBar"></i></div></div></div>
+    </div>
+  </section>
+
+  <!-- INGRESOS -->
+  <section class="view" id="v-ingresos">
+    <div class="sec-t"><h2>💸 Cargar lo que hice hoy</h2></div>
+    <div class="card">
+      <div class="row">
+        <label>Fecha<input type="date" id="iFecha"></label>
+        <label>Dólares que entraron (USD)<input type="number" inputmode="decimal" id="iUsd" placeholder="ej: 85"></label>
+        <label>Horas trabajadas<input type="number" inputmode="decimal" id="iHoras" placeholder="ej: 6"></label>
+      </div>
+      <div class="row" style="margin-top:10px"><label>Nota (opcional)<input id="iNota" placeholder="clienta, servicio…"></label></div>
+      <div class="card" style="margin-top:12px;background:#fff7fb" id="iCalc"></div>
+      <button class="btn" style="width:100%;margin-top:12px" onclick="addIngreso()">✨ Guardar ingreso · ka-ching</button>
+    </div>
+    <div class="grid two" style="margin-top:14px">
+      <div class="card"><div class="sec-t" style="margin-top:0"><h2>Mes a mes</h2><span class="pill">ARS</span></div><div class="ch"><canvas id="cMeses"></canvas></div></div>
+      <div class="card"><h2 style="font-size:20px;font-style:italic">Tu ritmo</h2><div id="ritmo" style="margin-top:10px"></div></div>
+    </div>
+    <div class="sec-t"><h2>Historial</h2></div>
+    <div class="list" id="lIng"></div>
+  </section>
+
+  <!-- CASA -->
+  <section class="view" id="v-casa">
+    <div class="sec-t"><h2>🏠 Gastos de la casa</h2><span class="pill" id="casaMes"></span></div>
+    <div class="card">
+      <div class="hint" style="margin-bottom:8px">Tocá una categoría y cargá el monto en pesos</div>
+      <div class="chips" id="catChips"></div>
+      <div class="row" style="margin-top:12px">
+        <label>Monto (ARS)<input type="number" inputmode="decimal" id="gMonto" placeholder="ej: 25000"></label>
+        <label>Fecha<input type="date" id="gFecha"></label>
+      </div>
+      <div class="row" style="margin-top:10px"><label>Detalle<input id="gNota" placeholder="ej: compra semanal"></label></div>
+      <button class="btn" style="width:100%;margin-top:12px" onclick="addGasto()">Guardar gasto</button>
+    </div>
+    <div class="sec-t"><h2>📌 Fijos del mes</h2><span class="hint" id="fijosTot"></span></div>
+    <div class="card"><div class="goal"><span>Pagados</span><span id="fijosPct"></span></div><div class="bar menta"><i id="fijosBar"></i></div></div>
+    <div class="list" id="lFijos" style="margin-top:10px"></div>
+    <details style="margin-top:10px"><summary>➕ Agregar o editar un fijo</summary>
+      <div class="card" style="margin-top:8px"><div class="row"><label>Nombre<input id="fNom"></label><label>Monto ARS<input type="number" id="fMon"></label></div><button class="btn sm" style="margin-top:10px" onclick="addFijo()">Agregar</button></div>
+    </details>
+    <div class="sec-t"><h2>🧾 Gastos del día a día</h2><span class="hint" id="diaTot"></span></div>
+    <div class="list" id="lGas"></div>
+  </section>
+
+  <!-- COMPRAS -->
+  <section class="view" id="v-compras">
+    <div class="sec-t"><h2>🛒 Lista del súper</h2><span class="pill" id="compTot"></span></div>
+    <div class="card">
+      <div class="row"><label>Producto<input id="cItem" placeholder="ej: leche"></label><label style="max-width:150px">Precio aprox.<input type="number" id="cPre" placeholder="$"></label></div>
+      <button class="btn" style="width:100%;margin-top:10px" onclick="addCompra()">Agregar a la lista</button>
+    </div>
+    <div class="card" style="margin-top:12px"><div class="goal"><span>Comprado</span><span id="compPct"></span></div><div class="bar menta"><i id="compBar"></i></div></div>
+    <div class="list" id="lComp" style="margin-top:10px"></div>
+    <div class="row" style="margin-top:12px"><button class="btn soft" onclick="cerrarCompra()">✅ Terminé: pasar a gastos (Chango Más)</button><button class="btn soft" onclick="limpiarComprados()">🧹 Borrar comprados</button></div>
+  </section>
+
+  <!-- META ADS -->
+  <section class="view" id="v-ads">
+    <div class="sec-t"><h2><img src="https://cdn.jsdelivr.net/npm/simple-icons@13.21.0/icons/meta.svg" style="width:22px;vertical-align:-3px;filter:invert(32%) sepia(90%) saturate(2000%) hue-rotate(200deg)"> Meta Ads</h2><span class="pill">marca personal PAM</span></div>
+    <div class="grid k4">
+      <div class="card kpi"><div class="lbl">🎯 Objetivo por día</div><div class="val" id="aObj">—</div><div class="sub">editable en Ajustes</div></div>
+      <div class="card kpi"><div class="lbl">📣 Invertido este mes</div><div class="val" id="aMes">—</div><div class="sub" id="aMesS"></div></div>
+      <div class="card kpi"><div class="lbl">🧾 Con impuestos</div><div class="val neg" id="aImp">—</div><div class="sub" id="aImpS"></div></div>
+      <div class="card kpi"><div class="lbl">🛍️ Ventas y ROAS</div><div class="val" id="aRoas">—</div><div class="sub" id="aRoasS"></div></div>
+    </div>
+    <div class="card" style="margin-top:14px"><div class="goal"><span>Días del mes con la inversión cumplida</span><span id="aDiasTxt"></span></div><div class="bar"><i id="aDiasBar"></i></div></div>
+    <div class="card" style="margin-top:14px">
+      <div class="chips" id="adsTipo"></div>
+      <div class="row" style="margin-top:10px">
+        <label>Fecha<input type="date" id="aFecha"></label>
+        <label>Monto (USD)<input type="number" inputmode="decimal" id="aUsd" placeholder="ej: 51"></label>
+        <label id="aVentasL">Ventas generadas (USD)<input type="number" inputmode="decimal" id="aVentas" placeholder="0"></label>
+      </div>
+      <button class="btn" style="width:100%;margin-top:12px" onclick="addAds()">Guardar</button>
+      <p class="hint" style="margin:10px 0 0">Las ventas se cargan a mano por ahora. A futuro se puede conectar con Meta y la tienda para que entren solas.</p>
+    </div>
+    <div class="list" id="lAds" style="margin-top:12px"></div>
+  </section>
+
+  <!-- CHANCHITO -->
+  <section class="view" id="v-chancho">
+    <div class="card" style="text-align:center;background:linear-gradient(160deg,#fff,#ffe1ee)">
+      <div style="font-size:70px">🐷</div>
+      <div class="script" style="font-size:26px;color:var(--fucsia)">Mi chanchito</div>
+      <div class="big" id="chTot">$0</div>
+      <div class="hint" id="chMetaTxt"></div>
+      <div class="bar" style="margin:12px 0"><i id="chBar"></i></div>
+      <div class="row"><input type="number" inputmode="decimal" id="chMonto" placeholder="Monto ARS"><input id="chNota" placeholder="¿Para qué?"></div>
+      <div class="row" style="margin-top:10px"><button class="btn" onclick="addChancho(1)">🪙 Guardar</button><button class="btn soft" onclick="addChancho(-1)">Sacar</button></div>
+    </div>
+    <div class="card" style="margin-top:14px"><b>🎯 Meta del chanchito</b>
+      <div class="row" style="margin-top:8px"><input id="chMetaNom" placeholder="ej: Membresía Reinas Millonarias"><input type="number" id="chMetaMon" placeholder="Monto ARS"></div>
+      <button class="btn soft sm" style="margin-top:8px" onclick="setMetaChancho()">Guardar meta</button></div>
+    <div class="list" id="lChan" style="margin-top:12px"></div>
+  </section>
+
+  <!-- PREMIOS -->
+  <section class="view" id="v-premios">
+    <div class="sec-t"><h2>🏆 Tus premios</h2><span class="pill" id="premCnt"></span></div>
+    <div class="badges" id="badges"></div>
+  </section>
+
+  <!-- AJUSTES -->
+  <section class="view" id="v-ajustes">
+    <div class="sec-t"><h2>⚙️ Ajustes</h2></div>
+    <div class="card"><div class="row">
+      <label>Tu nombre<input id="sNom"></label>
+      <label>Meta del mes (ARS)<input type="number" id="sMeta"></label>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <label>Comisión DolarApp (%)<input type="number" step="0.01" id="sFeeDA"></label>
+      <label>Comisión Mercado Pago (%)<input type="number" step="0.01" id="sFeeMP"></label>
+      <label>Dólar manual (vacío = automático)<input type="number" id="sDolar"></label>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <label>Meta Ads por día (USD)<input type="number" id="sAds"></label>
+      <label>IVA a los anuncios (%)<input type="number" id="sIva"></label>
+      <label>Percepción con tarjeta (%)<input type="number" id="sPer"></label>
+    </div>
+    <div class="hint" style="margin-top:12px">Estimado por día (USD) · el domingo se descansa 💆‍♀️</div>
+    <div class="week" id="sEst"></div>
+    <p class="hint">Las comisiones y los impuestos cambian: confirmalos en DolarApp, Mercado Pago y tu banco, y corregilos acá.</p>
+    <button class="btn" onclick="guardarAjustes()">Guardar ajustes</button></div>
+    <div class="card" style="margin-top:14px"><b>💾 Copia de seguridad</b><p class="hint">Todo se guarda solo en este dispositivo. Descargá una copia cada tanto, y usala para pasar tus datos de la compu al celu.</p>
+      <div class="row"><button class="btn soft" onclick="exportar()">⬇️ Descargar copia</button><label class="btn soft" style="text-align:center">⬆️ Cargar copia<input type="file" accept=".json" onchange="importar(event)" hidden></label></div>
+      <div class="row" style="margin-top:10px"><button class="btn soft" onclick="testSonido()">🔔 Probar ka-ching</button><button class="btn soft" onclick="instalar()" id="btnInst">📲 Instalar app</button></div>
+    </div>
+  </section>
+</main>
+</div>
+<div class="tabs" id="tabs"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===== Datos (solo en este dispositivo) ===== */
+const KEY='pamstudio_v1';
+const FAV=d=>`https://www.google.com/s2/favicons?domain=${d}&sz=64`;
+const SI=n=>`https://cdn.jsdelivr.net/npm/simple-icons@13.21.0/icons/${n}.svg`;
+const CATS=[
+ {id:'super',n:'Chango Más',e:'🛒',logo:FAV('masonline.com.ar')},
+ {id:'comida',n:'Comida del día',e:'🥐'},
+ {id:'extra',n:'Extras',e:'🛍️'},
+ {id:'servicios',n:'Luz, gas y agua',e:'💡'},
+ {id:'hogar',n:'Alquiler y casa',e:'🏡'},
+ {id:'alay',n:'Alay',e:'🎀'},
+ {id:'ia',n:'Herramientas IA',e:'🤖'},
+ {id:'ads',n:'Meta Ads',e:'📣',logo:SI('meta')},
+ {id:'otros',n:'Otros',e:'✨'}
+];
+const FIJOS0=[
+ {n:'Alquiler',c:'hogar',m:500000,e:'🏡'},
+ {n:'Luz',c:'servicios',m:0,e:'💡'},
+ {n:'Gas',c:'servicios',m:0,e:'🔥'},
+ {n:'Agua',c:'servicios',m:0,e:'💧'},
+ {n:'Internet Telecentro',c:'hogar',m:0,logo:FAV('telecentro.com.ar')},
+ {n:'Colegio San Vicente de Paul',c:'alay',m:0,e:'🏫'},
+ {n:'Danza de Alay',c:'alay',m:0,e:'🩰'},
+ {n:'Claude',c:'ia',m:0,logo:SI('claude')},
+ {n:'ChatGPT',c:'ia',m:0,logo:SI('openai')},
+ {n:'Membresía Reinas Millonarias',c:'otros',m:0,e:'👑',pausa:true}
+];
+const FRASES=[
+ ['Las metas son el combustible en el horno del logro.','Brian Tracy'],
+ ['Comete ese sapo: hacé primero lo más difícil del día.','Brian Tracy'],
+ ['Decidí exactamente lo que querés. Escribilo. Hacelo hoy.','inspirado en Brian Tracy'],
+ ['Soy una mujer que cumple lo que se propone. Mi dinero crece cada día.','Método PAM'],
+ ['El domingo descanso porque de lunes a sábado brillo.','Método PAM'],
+ ['Cada dólar que gano es una prueba de que puedo.','Método PAM'],
+ ['Me merezco abundancia, calma y una vida en la que elijo yo.','Método PAM'],
+ ['Hoy un pasito; en un mes, otra mujer.','Método PAM'],
+ ['Mi chanchito engorda y mis sueños también.','Método PAM'],
+ ['Empoderada, enfocada y con mi agenda llena.','Método PAM']
+];
+const DEF={settings:{nom:'Pamela Peralta',meta:1300000,feeDA:0,feeMP:0,dolar:null,ads:51,iva:21,per:30,est:[40,20,25,30,45,45,0]},
+ ingresos:[],gastos:[],fijos:FIJOS0.map((f,i)=>({id:'f'+i,...f,pagos:{}})),compras:[],chancho:{nom:'Membresía Reinas Millonarias',meta:0,movs:[]},ads:[],logros:{},rate:null};
+let S;
+try{S=JSON.parse(localStorage.getItem(KEY))||structuredClone(DEF)}catch(e){S=structuredClone(DEF)}
+for(const k in DEF) if(S[k]===undefined) S[k]=structuredClone(DEF[k]);
+for(const k in DEF.settings) if(S.settings[k]===undefined) S.settings[k]=structuredClone(DEF.settings[k]);
+const estDe=f=>S.settings.est[(new Date(f+'T12:00').getDay()+6)%7]||0; // estimado del día (lunes = 0)
+const usdDia=f=>S.ingresos.filter(x=>x.fecha===f).reduce((a,x)=>a+neto(x.usd).usd,0);
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){toast('⚠️ No se pudo guardar en este dispositivo')}};
+const uid=()=>Math.random().toString(36).slice(2,9);
+const hoy=()=>new Date().toLocaleDateString('sv');
+const mesDe=d=>d.slice(0,7);
+const mesAct=()=>hoy().slice(0,7);
+const ars=n=>'$'+Math.round(n||0).toLocaleString('es-AR');
+const usd=n=>'US$'+(n||0).toLocaleString('es-AR',{maximumFractionDigits:2});
+const $=id=>document.getElementById(id);
+const MESES=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+
+/* ===== Dólar en vivo (dolarapi.com) ===== */
+async function cargarDolar(){
+  try{
+    const [c,o]=await Promise.all(['cripto','oficial'].map(t=>fetch('https://dolarapi.com/v1/dolares/'+t).then(r=>r.json())));
+    S.rate={cripto:c.compra,criptoV:c.venta,oficial:o.venta,t:Date.now()};save();
+  }catch(e){}
+  pintarDolar();render();
+}
+function cotiz(){return S.settings.dolar||S.rate?.cripto||1000}
+function oficial(){return S.rate?.oficial||cotiz()}
+function pintarDolar(){
+  const r=S.rate;
+  $('rate').innerHTML=`<img src="${FAV('dolarapp.com')}" alt="">Cripto <b>${ars(cotiz())}</b>${r?` · Oficial ${ars(r.oficial)}`:''}${S.settings.dolar?' <span class="pill">manual</span>':''}`;
+}
+/* ===== Cálculo de un ingreso ===== */
+function neto(usdBruto){const n=usdBruto*(1-S.settings.feeDA/100);return{usd:n,ars:n*cotiz()*(1-S.settings.feeMP/100)}}
+const ingARS=i=>i.ars??neto(i.usd).ars;
+
+/* ===== Sonido ka-ching (sintetizado) y confeti ===== */
+let AC;
+function kaching(big){
+  try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const t=AC.currentTime;
+    const noise=AC.createBuffer(1,AC.sampleRate*.08,AC.sampleRate),d=noise.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,3);
+    const s=AC.createBufferSource(),f=AC.createBiquadFilter(),g=AC.createGain();s.buffer=noise;f.type='highpass';f.frequency.value=2500;g.gain.value=.5;s.connect(f);f.connect(g);g.connect(AC.destination);s.start(t);
+    [[1568,.09],[2093,.16]].concat(big?[[2637,.26],[3136,.34]]:[]).forEach(([fr,dt])=>{const o=AC.createOscillator(),v=AC.createGain();o.type='triangle';o.frequency.value=fr;v.gain.setValueAtTime(.0001,t+dt);v.gain.exponentialRampToValueAtTime(.25,t+dt+.01);v.gain.exponentialRampToValueAtTime(.0001,t+dt+.6);o.connect(v);v.connect(AC.destination);o.start(t+dt);o.stop(t+dt+.7)});
+  }catch(e){}
+}
+function fiesta(big){if(!window.confetti)return;const c=['#ff2e93','#ff8fb8','#ffd1e3','#d9c2ff','#e8b86d'];
+  confetti({particleCount:big?220:90,spread:big?110:70,origin:{y:.7},colors:c});
+  if(big)setTimeout(()=>confetti({particleCount:160,angle:60,spread:70,origin:{x:0},colors:c})||confetti({particleCount:160,angle:120,spread:70,origin:{x:1},colors:c}),300);}
+function testSonido(){kaching(true);fiesta(true)}
+function toast(t){const el=$('toast');el.textContent=t;el.classList.add('on');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('on'),2800)}
+
+/* ===== Navegación ===== */
+const VIEWS=[['inicio','💖','Inicio'],['ingresos','💸','Ingresos'],['casa','🏠','Casa'],['compras','🛒','Súper'],['ads','📣','Meta Ads'],['chancho','🐷','Chanchito'],['premios','🏆','Premios'],['ajustes','⚙️','Ajustes']];
+function nav(v){document.querySelectorAll('.view').forEach(e=>e.classList.toggle('on',e.id==='v-'+v));document.querySelectorAll('[data-v]').forEach(b=>b.classList.toggle('on',b.dataset.v===v));try{localStorage.setItem(KEY+'_tab',v)}catch(e){}render();window.scrollTo({top:0,behavior:'smooth'})}
+$('side').innerHTML=VIEWS.map(([v,e,n])=>`<button data-v="${v}" onclick="nav('${v}')"><span>${e}</span>${n}</button>`).join('')+'<div class="tagline script">Método PAM ✨</div>';
+$('tabs').innerHTML=VIEWS.filter(v=>v[0]!=='ajustes'&&v[0]!=='premios').map(([v,e,n])=>`<button data-v="${v}" onclick="nav('${v}')"><span>${e}</span>${n}</button>`).join('')+`<button data-v="premios" onclick="nav('premios')"><span>🏆</span>Más</button>`;
+
+/* ===== Números que cuentan ===== */
+function contar(el,valor,fmt){const desde=el._v||0;el._v=valor;const t0=performance.now(),dur=900;
+  (function f(t){const p=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-p,3);el.textContent=fmt(desde+(valor-desde)*e);if(p<1)requestAnimationFrame(f)})(t0)}
+function barra(id,p){setTimeout(()=>$(id).style.width=Math.max(0,Math.min(100,p))+'%',60)}
+
+/* ===== Cálculos del mes ===== */
+function diasHabRestantes(){const d=new Date(),y=d.getFullYear(),m=d.getMonth(),fin=new Date(y,m+1,0).getDate();let n=0;const cargadoHoy=S.ingresos.some(i=>i.fecha===hoy());
+  for(let i=d.getDate()+(cargadoHoy?1:0);i<=fin;i++)if(new Date(y,m,i).getDay()!==0)n++;return n}
+function totMes(m=mesAct()){
+  const ing=S.ingresos.filter(i=>mesDe(i.fecha)===m);
+  const gD=S.gastos.filter(g=>mesDe(g.fecha)===m).reduce((a,g)=>a+g.monto,0);
+  const gF=S.fijos.filter(f=>!f.pausa).reduce((a,f)=>a+(+f.m||0),0);
+  const adsM=S.ads.filter(a=>mesDe(a.fecha)===m&&a.tipo!=='aporte');
+  const adsUSD=adsM.reduce((a,x)=>a+x.usd,0);
+  return{ingARS:ing.reduce((a,i)=>a+ingARS(i),0),ingUSD:ing.reduce((a,i)=>a+neto(i.usd).usd,0),horas:ing.reduce((a,i)=>a+(+i.horas||0),0),dias:new Set(ing.map(i=>i.fecha)).size,gD,gF,adsUSD,adsARS:adsUSD*(1+(S.settings.iva+S.settings.per)/100)*oficial(),ventas:adsM.reduce((a,x)=>a+(+x.ventas||0),0)}
+}
+const chanchoTot=()=>S.chancho.movs.reduce((a,m)=>a+m.monto,0);
+
+/* ===== Gráficos ===== */
+const CH={};
+function chart(id,cfg){if(!window.Chart)return;CH[id]?.destroy();CH[id]=new Chart($(id),cfg)}
+if(window.Chart){Chart.defaults.font.family='Poppins';Chart.defaults.color='#9b6b84'}
+const PAL=['#ff2e93','#ff8fb8','#d9c2ff','#7fe0c2','#e8b86d','#ffb3c1','#b39ddb','#ffd166','#f48fb1'];
+
+/* ===== Render ===== */
+function render(){
+  const s=S.settings,t=totMes(),v=document.querySelector('.view.on')?.id;
+  $('nombre').textContent=s.nom;
+  /* Inicio */
+  const p=s.meta?t.ingARS/s.meta*100:0;
+  $('metaTxt').textContent=ars(s.meta);
+  contar($('faltaTxt'),Math.max(0,s.meta-t.ingARS),ars);
+  $('metaPct').textContent=Math.round(p)+' % logrado';
+  const dr=diasHabRestantes(),falta=Math.max(0,s.meta-t.ingARS);
+  $('metaPorDia').textContent=falta>0&&dr?`Necesitás ${ars(falta/dr)} (${usd(falta/dr/cotiz())}) por día · ${dr} días hábiles`:'🎉 ¡Meta cumplida!';
+  barra('metaBar',p);
+  const lun=new Date();lun.setDate(lun.getDate()-((lun.getDay()+6)%7));
+  let semU=0;const semE=s.est.reduce((a,x)=>a+x,0);
+  $('semana').innerHTML=['L','M','M','J','V','S','D'].map((d,i)=>{const f=new Date(lun);f.setDate(lun.getDate()+i);const fs=f.toLocaleDateString('sv');const u=usdDia(fs),e=s.est[i];semU+=u;
+    return `<div class="${i===6?'rest':''} ${u&&u>=e?'ok':''} ${fs===hoy()?'hoy':''}">${d}<b>${i===6?'💆‍♀️':(u?Math.round(u):'·')}</b><small style="color:var(--muted)">${i===6?'descanso':'de '+e}</small></div>`}).join('');
+  $('semTxt').innerHTML=`Semana: <b>${usd(semU)}</b> de ${usd(semE)}`;$('semArs').textContent='≈ '+ars(semE*cotiz())+' estimados';
+  barra('semBar',semE?semU/semE*100:0);
+  const hoyI=S.ingresos.filter(i=>i.fecha===hoy());
+  contar($('kHoy'),hoyI.reduce((a,i)=>a+ingARS(i),0),ars);{const e=estDe(hoy()),u=usdDia(hoy());$('kHoyS').textContent=e?`${usd(u)} de ${usd(e)} estimados ${u>=e?'✅':''}`:'Hoy es domingo: a descansar 💆‍♀️'}
+  contar($('kMes'),t.ingARS,ars);$('kMesS').textContent=`${usd(t.ingUSD)} · ${t.dias} días · ${t.horas} h`;
+  contar($('kGas'),t.gD+t.gF,ars);$('kGasS').textContent=`Fijos ${ars(t.gF)} · día a día ${ars(t.gD)}`;
+  contar($('kChan'),chanchoTot(),ars);$('kChanS').textContent=S.chancho.meta?Math.round(chanchoTot()/S.chancho.meta*100)+' % de '+S.chancho.nom:'Poné una meta 🎯';
+  const tot=S.ingresos.reduce((a,i)=>a+neto(i.usd).usd,0);
+  const N=[[0,'🥉','Bronce'],[1000,'🥈','Plata'],[5000,'🥇','Oro'],[15000,'💎','Diamante'],[40000,'👑','Reina']];
+  let k=0;N.forEach((n,i)=>{if(tot>=n[0])k=i});const nx=N[k+1];
+  $('nivMed').textContent=N[k][1];$('nivTxt').textContent='Nivel '+N[k][2];
+  $('nivSub').textContent=nx?`Llevás ${usd(tot)} en total · te faltan ${usd(nx[0]-tot)} para ${nx[2]} ${nx[1]}`:'¡Nivel máximo! Sos una reina 👑';
+  barra('nivBar',nx?(tot-N[k][0])/(nx[0]-N[k][0])*100:100);
+  if(v==='v-inicio'){
+    const L=[],D=[];for(let i=13;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);const f=d.toLocaleDateString('sv');L.push(d.getDate()+'/'+(d.getMonth()+1));D.push(+S.ingresos.filter(x=>x.fecha===f).reduce((a,x)=>a+neto(x.usd).usd,0).toFixed(2))}
+    chart('cDias',{type:'bar',data:{labels:L,datasets:[{data:D,backgroundColor:D.map(x=>x?'#ff2e93':'#ffd1e3'),borderRadius:10}]},options:{maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{color:'#ffe3ee'}}}}});
+    const porCat={};S.gastos.filter(g=>mesDe(g.fecha)===mesAct()).forEach(g=>porCat[g.cat]=(porCat[g.cat]||0)+g.monto);S.fijos.filter(f=>!f.pausa&&+f.m).forEach(f=>porCat[f.c]=(porCat[f.c]||0)+(+f.m));
+    if(t.adsARS)porCat.ads=(porCat.ads||0)+t.adsARS;
+    const ks=Object.keys(porCat);
+    chart('cCat',{type:'doughnut',data:{labels:ks.map(k=>CATS.find(c=>c.id===k)?.n||k),datasets:[{data:ks.map(k=>Math.round(porCat[k])),backgroundColor:PAL,borderWidth:3,borderColor:'#fff'}]},options:{maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'bottom',labels:{boxWidth:10,usePointStyle:true}}}}});
+  }
+  /* Ingresos */
+  const u=+$('iUsd').value||0,n=neto(u),h=+$('iHoras').value||0;
+  $('iCalc').innerHTML=`<div class="row"><div><div class="hint">Te queda en dólares</div><b style="font-size:20px">${usd(n.usd)}</b><div class="hint">después de DolarApp (${s.feeDA} %)</div></div><div><div class="hint">En pesos a ${ars(cotiz())}</div><b style="font-size:20px;color:var(--fucsia)">${ars(n.ars)}</b><div class="hint">Mercado Pago ${s.feeMP} %</div></div><div><div class="hint">Por hora</div><b style="font-size:20px">${h?usd(n.usd/h):'—'}</b></div></div>`;
+  if(v==='v-ingresos'){
+    const ms=[];for(let i=5;i>=0;i--){const d=new Date();d.setDate(1);d.setMonth(d.getMonth()-i);ms.push(d.toLocaleDateString('sv').slice(0,7))}
+    const tm=ms.map(m=>totMes(m));
+    chart('cMeses',{type:'line',data:{labels:ms.map(m=>MESES[+m.slice(5)-1]),datasets:[{label:'Ingresos',data:tm.map(x=>Math.round(x.ingARS)),borderColor:'#ff2e93',backgroundColor:'#ff2e9322',fill:true,tension:.4,pointRadius:5},{label:'Gastos',data:tm.map(x=>Math.round(x.gD+x.gF+x.adsARS)),borderColor:'#b39ddb',tension:.4,pointRadius:4}]},options:{maintainAspectRatio:false,plugins:{legend:{position:'bottom'}},scales:{y:{grid:{color:'#ffe3ee'}},x:{grid:{display:false}}}}});
+    const prom=t.dias?t.ingUSD/t.dias:0;
+    $('ritmo').innerHTML=`<div class="item"><div class="ic">📈</div><div class="tx"><b>Promedio por día</b><small>días trabajados este mes</small></div><div class="am">${usd(prom)}</div></div>
+     <div class="item"><div class="ic">⏰</div><div class="tx"><b>Por hora</b><small>${t.horas} h este mes</small></div><div class="am">${t.horas?usd(t.ingUSD/t.horas):'—'}</div></div>
+     <div class="item"><div class="ic">🔮</div><div class="tx"><b>Si seguís así</b><small>proyección del mes (lun a sáb)</small></div><div class="am">${ars(t.ingARS+prom*cotiz()*diasHabRestantes())}</div></div>
+     <div class="item"><div class="ic">💖</div><div class="tx"><b>Balance del mes</b><small>ingresos − gastos − anuncios</small></div><div class="am ${t.ingARS-t.gD-t.gF-t.adsARS>=0?'pos':'neg'}">${ars(t.ingARS-t.gD-t.gF-t.adsARS)}</div></div>`;
+  }
+  $('lIng').innerHTML=S.ingresos.slice().sort((a,b)=>b.fecha.localeCompare(a.fecha)).slice(0,40).map(i=>`<div class="item"><div class="ic"><img src="${FAV('dolarapp.com')}" alt=""></div><div class="tx"><b>${usd(i.usd)} → ${ars(ingARS(i))}</b><small>${i.fecha} · ${i.horas||0} h ${i.nota?'· '+esc(i.nota):''}</small></div><button class="x" onclick="del('ingresos','${i.id}')">✕</button></div>`).join('')||'<p class="hint">Todavía no cargaste ingresos. ¡El primero trae premio! 🎁</p>';
+  /* Casa */
+  $('casaMes').textContent=MESES[new Date().getMonth()]+' '+new Date().getFullYear();
+  $('catChips').innerHTML=CATS.filter(c=>c.id!=='ads').map(c=>`<button class="chip ${selCat===c.id?'on':''}" onclick="selCat='${c.id}';render()">${c.logo?`<img src="${c.logo}" alt="">`:c.e} ${c.n}</button>`).join('');
+  const fm=S.fijos.filter(f=>!f.pausa),pag=fm.filter(f=>f.pagos[mesAct()]);
+  $('fijosTot').textContent='Total '+ars(t.gF);$('fijosPct').textContent=`${pag.length} de ${fm.length}`;barra('fijosBar',fm.length?pag.length/fm.length*100:0);
+  $('lFijos').innerHTML=S.fijos.map(f=>`<div class="item ${f.pagos[mesAct()]?'done':''}"><button class="chk ${f.pagos[mesAct()]?'on':''}" onclick="togFijo('${f.id}')">${f.pagos[mesAct()]?'✓':''}</button><div class="ic">${f.logo?`<img src="${f.logo}" alt="">`:f.e||'📌'}</div><div class="tx"><b onclick="renFijo('${f.id}')" title="Tocá para cambiar el nombre" style="cursor:pointer">${esc(f.n)} ✏️</b><small>${f.pausa?'⏸️ en pausa · meta para volver':CATS.find(c=>c.id===f.c)?.n||''}</small></div><input type="number" value="${f.m||''}" placeholder="$" style="width:110px" onchange="setFijo('${f.id}',this.value)"><button class="x" onclick="pausaFijo('${f.id}')" title="Pausar">${f.pausa?'▶️':'⏸️'}</button></div>`).join('');
+  const gm=S.gastos.filter(g=>mesDe(g.fecha)===mesAct());
+  $('diaTot').textContent='Este mes '+ars(t.gD);
+  $('lGas').innerHTML=gm.slice().sort((a,b)=>b.fecha.localeCompare(a.fecha)).map(g=>{const c=CATS.find(x=>x.id===g.cat)||CATS[8];return `<div class="item"><div class="ic">${c.logo?`<img src="${c.logo}" alt="">`:c.e}</div><div class="tx"><b>${esc(g.nota||c.n)}</b><small>${g.fecha} · ${c.n}</small></div><div class="am neg">−${ars(g.monto)}</div><button class="x" onclick="del('gastos','${g.id}')">✕</button></div>`}).join('')||'<p class="hint">Sin gastos cargados este mes.</p>';
+  /* Compras */
+  const cp=S.compras,ch=cp.filter(c=>c.hecho);
+  $('compTot').textContent='Total aprox. '+ars(cp.reduce((a,c)=>a+(+c.p||0),0));$('compPct').textContent=`${ch.length} de ${cp.length}`;barra('compBar',cp.length?ch.length/cp.length*100:0);
+  $('lComp').innerHTML=cp.map(c=>`<div class="item ${c.hecho?'done':''}"><button class="chk ${c.hecho?'on':''}" onclick="togCompra('${c.id}')">${c.hecho?'✓':''}</button><div class="tx"><b>${esc(c.n)}</b></div><div class="am">${c.p?ars(c.p):''}</div><button class="x" onclick="del('compras','${c.id}')">✕</button></div>`).join('')||'<p class="hint">Lista vacía. Agregá lo que falta en casa 🛒</p>';
+  /* Ads */
+  contar($('aObj'),s.ads,usd);contar($('aMes'),t.adsUSD,usd);$('aMesS').textContent='≈ '+ars(t.adsUSD*oficial())+' sin impuestos';
+  contar($('aImp'),t.adsARS,ars);$('aImpS').textContent=`IVA ${s.iva} % + percepción ${s.per} % al oficial`;
+  $('aRoas').textContent=t.adsUSD?(t.ventas/t.adsUSD).toFixed(2)+'x':'—';$('aRoasS').textContent='Ventas '+usd(t.ventas);
+  const diasAds={};S.ads.filter(a=>mesDe(a.fecha)===mesAct()&&a.tipo!=='aporte').forEach(a=>diasAds[a.fecha]=(diasAds[a.fecha]||0)+a.usd);
+  const cumpl=Object.values(diasAds).filter(x=>x>=s.ads).length,diaHoy=new Date().getDate();
+  $('aDiasTxt').textContent=`${cumpl} de ${diaHoy} días`;barra('aDiasBar',cumpl/diaHoy*100);
+  $('adsTipo').innerHTML=[['gasto','📣 Gasto del día'],['aporte','💝 Plata que le pasé a Joel para anuncios']].map(([k,n])=>`<button class="chip ${adsTipo===k?'on':''}" onclick="adsTipo='${k}';render()">${n}</button>`).join('');
+  $('aVentasL').style.display=adsTipo==='aporte'?'none':'';
+  $('lAds').innerHTML=S.ads.slice().sort((a,b)=>b.fecha.localeCompare(a.fecha)).slice(0,40).map(a=>`<div class="item"><div class="ic">${a.tipo==='aporte'?'💝':`<img src="${SI('meta')}" alt="">`}</div><div class="tx"><b>${a.tipo==='aporte'?'Aporte para publicidad':'Inversión en anuncios'} · ${usd(a.usd)}</b><small>${a.fecha}${a.ventas?' · ventas '+usd(a.ventas):''}</small></div><button class="x" onclick="del('ads','${a.id}')">✕</button></div>`).join('');
+  /* Chanchito */
+  const ct=chanchoTot();contar($('chTot'),ct,ars);
+  $('chMetaTxt').textContent=S.chancho.meta?`${Math.round(ct/S.chancho.meta*100)} % de ${S.chancho.nom} (${ars(S.chancho.meta)})`:'Poné una meta abajo 🎯';
+  barra('chBar',S.chancho.meta?ct/S.chancho.meta*100:0);
+  $('chMetaNom').value=S.chancho.nom;$('chMetaMon').value=S.chancho.meta||'';
+  $('lChan').innerHTML=S.chancho.movs.slice().reverse().map(m=>`<div class="item"><div class="ic">${m.monto>0?'🪙':'💸'}</div><div class="tx"><b>${esc(m.nota||'Ahorro')}</b><small>${m.fecha}</small></div><div class="am ${m.monto>0?'pos':'neg'}">${m.monto>0?'+':''}${ars(m.monto)}</div></div>`).join('');
+  /* Ajustes */
+  if(v==='v-ajustes'){$('sNom').value=s.nom;$('sMeta').value=s.meta;$('sFeeDA').value=s.feeDA;$('sFeeMP').value=s.feeMP;$('sDolar').value=s.dolar||'';$('sAds').value=s.ads;$('sIva').value=s.iva;$('sPer').value=s.per;
+    $('sEst').innerHTML=['Lun','Mar','Mié','Jue','Vie','Sáb'].map((d,i)=>`<div>${d}<input type="number" id="sE${i}" value="${s.est[i]}" style="padding:6px;text-align:center;font-size:14px"></div>`).join('')+'<div class="rest">Dom<b>💆‍♀️</b></div>'}
+  premios();
+}
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ===== Premios ===== */
+function premios(){
+  const t=totMes(),tot=S.ingresos.reduce((a,i)=>a+neto(i.usd).usd,0),dias=new Set(S.ingresos.map(i=>i.fecha));
+  let racha=0;for(let i=0;i<60;i++){const d=new Date();d.setDate(d.getDate()-i);if(d.getDay()===0)continue;if(dias.has(d.toLocaleDateString('sv')))racha++;else if(i>0)break}
+  const L=[
+   ['primer','🎁','Primer ingreso','Cargaste tu primera plata',S.ingresos.length>0],
+   ['racha6','🔥','Semana completa','6 días seguidos (sin contar el domingo)',racha>=6],
+   ['mitad','💫','Mitad de la meta','50 % de la meta del mes',t.ingARS>=S.settings.meta/2],
+   ['meta','👑','Meta cumplida','Llegaste a la meta del mes',t.ingARS>=S.settings.meta],
+   ['dia100','💵','Día de 100','Un día con US$100 netos o más',S.ingresos.some(i=>neto(i.usd).usd>=100)],
+   ['mil','🥈','US$1.000','Sumaste US$1.000 en total',tot>=1000],
+   ['chancho','🐷','Chanchito feliz','Guardaste tu primer ahorro',chanchoTot()>0],
+   ['chanmeta','🎀','Sueño cumplido','Llegaste a la meta del chanchito',S.chancho.meta&&chanchoTot()>=S.chancho.meta],
+   ['fijos','🏡','Casa al día','Pagaste todos los fijos del mes',S.fijos.filter(f=>!f.pausa).every(f=>f.pagos[mesAct()])],
+   ['super','🛒','Súper organizado','Completaste una lista de compras',S.logros._lista],
+   ['ads','📣','Primera campaña','Cargaste tu primera inversión en Meta Ads',S.ads.some(a=>a.tipo!=='aporte')],
+   ['horas','⏰','Mujer imparable','100 horas trabajadas en un mes',t.horas>=100]
+  ];
+  let nuevos=0;
+  $('badges').innerHTML=L.map(([id,e,n,d,ok])=>{if(ok&&!S.logros[id]){S.logros[id]=hoy();nuevos++;setTimeout(()=>toast(`🏆 ¡Premio nuevo: ${n}!`),400)}return `<div class="badge ${ok?'on':''}"><div class="e">${e}</div><b>${n}</b><small>${ok?'Ganado ✨':d}</small></div>`}).join('');
+  $('premCnt').textContent=L.filter(x=>x[4]).length+' de '+L.length;
+  if(nuevos){save();setTimeout(()=>{fiesta(true);kaching(true)},350)}
+}
+
+/* ===== Acciones ===== */
+let selCat='super',adsTipo='gasto';
+function addIngreso(){const u=+$('iUsd').value;if(!(u>0))return toast('Poné cuántos dólares entraron 💵');
+  const f=$('iFecha').value||hoy(),n=neto(u);const antes=totMes().ingARS;
+  S.ingresos.push({id:uid(),fecha:f,usd:u,horas:+$('iHoras').value||0,nota:$('iNota').value.trim(),ars:n.ars});save();
+  const e=estDe(f),totDia=usdDia(f),antesDia=totDia-n.usd;
+  const metaRota=antes<S.settings.meta&&totMes().ingARS>=S.settings.meta;
+  const diaRoto=e&&antesDia<e&&totDia>=e;
+  const big=metaRota||diaRoto;kaching(big);fiesta(big);
+  toast(metaRota?'👑 ¡LLEGASTE A LA META DEL MES!':diaRoto?(totDia>e*1.2?`🔥 ¡Superaste el estimado del día! ${usd(totDia)} de ${usd(e)}`:`💖 ¡Estimado del día cumplido! ${usd(totDia)}`):`✨ +${ars(n.ars)} · ka-ching!${e?` (llevás ${usd(totDia)} de ${usd(e)})`:''}`);
+  ['iUsd','iHoras','iNota'].forEach(i=>$(i).value='');render()}
+function addGasto(){const m=+$('gMonto').value;if(!(m>0))return toast('Poné el monto 🧾');S.gastos.push({id:uid(),fecha:$('gFecha').value||hoy(),cat:selCat,monto:m,nota:$('gNota').value.trim()});save();$('gMonto').value=$('gNota').value='';toast('Gasto guardado 🏠');render()}
+function addFijo(){const n=$('fNom').value.trim();if(!n)return;S.fijos.push({id:uid(),n,c:'otros',m:+$('fMon').value||0,e:'📌',pagos:{}});save();$('fNom').value=$('fMon').value='';render()}
+function setFijo(id,v){S.fijos.find(f=>f.id===id).m=+v||0;save();render()}
+function renFijo(id){const f=S.fijos.find(f=>f.id===id),n=prompt('Nombre del gasto fijo',f.n);if(n&&n.trim()){f.n=n.trim();save();render()}}
+function pausaFijo(id){const f=S.fijos.find(f=>f.id===id);f.pausa=!f.pausa;save();render()}
+function togFijo(id){const f=S.fijos.find(f=>f.id===id);f.pagos[mesAct()]=!f.pagos[mesAct()];save();if(f.pagos[mesAct()])kaching();render()}
+function addCompra(){const n=$('cItem').value.trim();if(!n)return;S.compras.push({id:uid(),n,p:+$('cPre').value||0,hecho:false});save();$('cItem').value=$('cPre').value='';$('cItem').focus();render()}
+function togCompra(id){const c=S.compras.find(c=>c.id===id);c.hecho=!c.hecho;if(S.compras.length&&S.compras.every(c=>c.hecho)){S.logros._lista=true;fiesta()}save();render()}
+function cerrarCompra(){const t=S.compras.filter(c=>c.hecho).reduce((a,c)=>a+(+c.p||0),0);if(!t)return toast('Marcá lo comprado con precio primero');S.gastos.push({id:uid(),fecha:hoy(),cat:'super',monto:t,nota:'Compra Chango Más'});S.compras=S.compras.filter(c=>!c.hecho);save();toast('🛒 '+ars(t)+' pasado a gastos');render()}
+function limpiarComprados(){S.compras=S.compras.filter(c=>!c.hecho);save();render()}
+function addAds(){const u=+$('aUsd').value;if(!(u>0))return toast('Poné el monto en USD');S.ads.push({id:uid(),tipo:adsTipo,fecha:$('aFecha').value||hoy(),usd:u,ventas:adsTipo==='aporte'?0:+$('aVentas').value||0});save();$('aUsd').value=$('aVentas').value='';toast(adsTipo==='aporte'?'💝 Aporte guardado':'📣 Inversión guardada');render()}
+function addChancho(sig){const m=+$('chMonto').value;if(!(m>0))return;S.chancho.movs.push({fecha:hoy(),monto:m*sig,nota:$('chNota').value.trim()});save();$('chMonto').value=$('chNota').value='';if(sig>0){kaching(S.chancho.meta&&chanchoTot()>=S.chancho.meta);fiesta()}render()}
+function setMetaChancho(){S.chancho.nom=$('chMetaNom').value.trim()||'Mi sueño';S.chancho.meta=+$('chMetaMon').value||0;save();toast('🎯 Meta guardada');render()}
+function del(col,id){if(!confirm('¿Borrar este registro?'))return;S[col]=S[col].filter(x=>x.id!==id);save();render()}
+function guardarAjustes(){const s=S.settings;s.nom=$('sNom').value.trim()||s.nom;s.meta=+$('sMeta').value||s.meta;s.feeDA=+$('sFeeDA').value||0;s.feeMP=+$('sFeeMP').value||0;s.dolar=+$('sDolar').value||null;s.ads=+$('sAds').value||0;s.iva=+$('sIva').value||0;s.per=+$('sPer').value||0;s.est=[0,1,2,3,4,5].map(i=>+$('sE'+i).value||0).concat(0);save();pintarDolar();toast('Ajustes guardados 💖');render()}
+function exportar(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(S,null,1)],{type:'application/json'}));a.download='pam-studio-copia-'+hoy()+'.json';a.click()}
+function importar(e){const f=e.target.files[0];if(!f)return;f.text().then(t=>{try{const d=JSON.parse(t);if(!d.settings)throw 0;S=d;save();toast('Copia cargada ✨');render()}catch(x){toast('Ese archivo no es una copia de PAM Studio')}})}
+let deferred;addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferred=e});
+function instalar(){if(deferred){deferred.prompt();deferred=null}else toast('En el celu: menú del navegador → «Agregar a pantalla de inicio» 📲')}
+let fr=Math.floor(Math.random()*FRASES.length);
+function nuevaFrase(){fr=(fr+1)%FRASES.length;const [q,a]=FRASES[fr];$('quote').innerHTML=`“${q}”<small>— ${a}</small>`}
+['iUsd','iHoras'].forEach(i=>$(i).addEventListener('input',render));
+['iFecha','gFecha','aFecha'].forEach(i=>$(i).value=hoy());
+nuevaFrase();pintarDolar();
+let tab='inicio';try{tab=localStorage.getItem(KEY+'_tab')||'inicio'}catch(e){}
+nav(tab);cargarDolar();
+if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
